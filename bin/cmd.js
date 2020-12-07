@@ -9,8 +9,12 @@ const download = require('download-git-repo');
 const ora = require('ora');
 const chalk = require("chalk");
 
-let baseSources = ["src/main.js", "src/Router.js"]
-let childSources = ["webpack.config.js", "package.json", "index.html", "src/App.tsx", "src/store.js", "src/actions/index.ts", "src/reducers/index.ts"]
+let baseSources = ["src/main.js", "src/Router.js", "webpack.config.js"]
+let childSources = ["webpack.config.js", "package.json", "index.html", "src/App.tsx", "src/store.js", "src/actions/index.ts", "src/reducers/index.ts", "src/singleSpaEntry.js"]
+let tsOrJsExchange = ["src/App.tsx", "src/actions/index.ts", "src/reducers/index.ts", "src/connect.tsx", "src/provider.tsx"]
+let tsConfigFiles = ["global.d.ts", "tsconfig.json"]
+let eslintConfigFiles = [".eslintrc.js"]
+let reg = /.ts/
 
 const replaceTemplate = (fsPath, valueArray) => {
   if(fs.existsSync(fsPath)){
@@ -27,18 +31,45 @@ const downloadTemplate = (downloadUrl, name, sources, spinner, valueArray) => {
     download(`direct:${downloadUrl}`, targetPath, {clone: true}, err => {
       if(!err){
         spinner.succeed()
-        sources = sources.map(item => {
+        let currentSources = sources.map(item => {
           return path.join(targetPath, item)
         })
-        sources.forEach(item => {
+        currentSources.forEach(item => {
           replaceTemplate(item, valueArray)
         })
         console.log(chalk.green(`项目${name}初始化成功~`))
         resolve("success")
+      }else{
+        reject(err)
       }
     })
   })
   
+}
+const renameOrDelete = async (documentName, valueArray) => {
+  const targetPath = path.resolve(__dirname, documentName);
+  if(!valueArray.useTs){
+    let changeSources = tsOrJsExchange.map(item => {
+      return path.join(targetPath, item)
+    })
+    let delSources = tsConfigFiles.map(item => {
+      return path.join(targetPath, item)
+    })
+    for(let item of changeSources){
+      fs.renameSync(item, item.replace(reg, ".js"))
+    }
+    for(let item of delSources){
+      fs.unlinkSync(item)
+    }
+  }
+  if(!valueArray.useEslint){
+    let delSources = eslintConfigFiles.map(item => {
+      return path.join(targetPath, item)
+    })
+    for(let item of delSources){
+      fs.unlinkSync(item)
+    }
+  }
 }
 
 program
@@ -104,6 +135,7 @@ program
       const spinner = ora(`${appKey}子应用模板下载中~请稍候`);
       spinner.start();
       await downloadTemplate("https://github.com/wz19951016/iceZoneChild.git", appKey, childSources, spinner, appObj)
+      renameOrDelete(appKey, appObj)
       valueArray.push(appObj)
     }
     const spinner = ora("基座应用模板下载中~请稍候");
