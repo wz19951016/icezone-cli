@@ -4,7 +4,7 @@
   "description": "一个创建简单single-spa项目的脚手架",
   "main": "index.js",
   "bin": {
-    "icezone-cli": "./bin/cmd.js"
+    "icezone-cli": "bin/cmd.js"
   },
   "private": false,
   "author": "WangZhong",
@@ -16,5 +16,20 @@
     "handlebars": "^4.7.6",
     "inquirer": "^7.3.3",
     "ora": "^5.1.0"
-  }
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wz19951016/icezone-cli.git"
+  },
+  "keywords": [
+    "single-spa"
+  ],
+  "bugs": {
+    "url": "https://github.com/wz19951016/icezone-cli/issues"
+  },
+  "homepage": "https://github.com/wz19951016/icezone-cli#readme"
 }

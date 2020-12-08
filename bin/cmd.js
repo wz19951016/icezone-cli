@@ -104,7 +104,7 @@ program
         default: `app${index + 1}`,
       }
     })
-    let valueArray = []
+    let valueArray = [], appkeyArr = []
     for(let index in askArray){
       let appObj = {}
       const result = await inquirer.prompt(askArray[index])
@@ -132,11 +132,14 @@ program
       appObj.useTs = result3[appKey]
       appObj.useEslint = result4[appKey]
       appObj.index = Number(index) + 1
-      const spinner = ora(`${appKey}子应用模板下载中~请稍候`);
-      spinner.start();
-      await downloadTemplate("https://github.com/wz19951016/iceZoneChild.git", appKey, childSources, spinner, appObj)
-      renameOrDelete(appKey, appObj)
+      appkeyArr.push(appKey)
       valueArray.push(appObj)
+    }
+    for(let index in valueArray){
+      const spinner = ora(`${appkeyArr[index]}子应用模板下载中~请稍候`);
+      spinner.start();
+      await downloadTemplate("https://github.com/wz19951016/iceZoneChild.git", appkeyArr[index], childSources, spinner, valueArray[index])
+      renameOrDelete(appkeyArr[index], valueArray[index])
     }
     const spinner = ora("基座应用模板下载中~请稍候");
     spinner.start();
