@@ -79,7 +79,7 @@ program
       valueArray.push(appObj)
     }
     const targetPath = path.resolve(__dirname, "processChild.js");
-    const spinner = ora("项目生成中...")
+    const spinner = ora("项目生成中,请稍候...")
     spinner.start()
     for(let index in valueArray){
       downloadFlag.push(1)
