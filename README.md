@@ -2,7 +2,7 @@
  * @Author: wangzhong
  * @Date: 2020-12-08 14:22:08
  * @LastEditors: wangzhong
- * @LastEditTime: 2020-12-08 21:06:38
+ * @LastEditTime: 2020-12-08 21:11:28
  * @FilePath: \icezone-cli\README.md
 -->
 ## 简介
@@ -12,6 +12,6 @@
 npm install -g icezone-cli
 ```
 ## 指令
-### icezone-cli init <name>  
+### icezone-cli init `<name>`
 
 初始化single-spa项目，根据提示对基座应用和子应用进行简单配置
