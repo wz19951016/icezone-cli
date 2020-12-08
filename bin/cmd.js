@@ -3,75 +3,18 @@
 const { program } = require("commander")
 const path = require('path');
 const inquirer = require("inquirer")
-const Handlebars = require('handlebars');
-const fs = require('fs');
-const download = require('download-git-repo');
 const ora = require('ora');
-const chalk = require("chalk");
+const fork = require('child_process').fork
 
 let baseSources = ["src/main.js", "src/Router.js", "webpack.config.js"]
 let childSources = ["webpack.config.js", "package.json", "index.html", "src/App.tsx", "src/store.js", "src/actions/index.ts", "src/reducers/index.ts", "src/singleSpaEntry.js"]
-let tsOrJsExchange = ["src/App.tsx", "src/actions/index.ts", "src/reducers/index.ts", "src/connect.tsx", "src/provider.tsx"]
-let tsConfigFiles = ["global.d.ts", "tsconfig.json"]
-let eslintConfigFiles = [".eslintrc.js"]
-let reg = /.ts/
+let downloadFlag = [1], installFlag = [1]
 
-const replaceTemplate = (fsPath, valueArray) => {
-  if(fs.existsSync(fsPath)){
-    let templateData = Array.isArray(valueArray) ? {apps: valueArray} : valueArray
-    const content = fs.readFileSync(fsPath).toString()
-    const template = Handlebars.compile(content)
-    const result = template(templateData)
-    fs.writeFileSync(fsPath, result)
+const ifOver = (flag, spinner) => {
+  if(flag.length === 0){
+    spinner.succeed()
   }
 }
-const downloadTemplate = (downloadUrl, name, sources, spinner, valueArray) => {
-  return new Promise((resolve, reject) => {
-    const targetPath = path.resolve(process.cwd(), name);
-    download(`direct:${downloadUrl}`, targetPath, {clone: true}, err => {
-      if(!err){
-        spinner.succeed()
-        let currentSources = sources.map(item => {
-          return path.join(targetPath, item)
-        })
-        currentSources.forEach(item => {
-          replaceTemplate(item, valueArray)
-        })
-        console.log(chalk.green(`项目${name}初始化成功~`))
-        resolve("success")
-      }else{
-        reject(err)
-      }
-    })
-  })
-  
-}
-const renameOrDelete = async (documentName, valueArray) => {
-  const targetPath = path.resolve(__dirname, documentName);
-  if(!valueArray.useTs){
-    let changeSources = tsOrJsExchange.map(item => {
-      return path.join(targetPath, item)
-    })
-    let delSources = tsConfigFiles.map(item => {
-      return path.join(targetPath, item)
-    })
-    for(let item of changeSources){
-      fs.renameSync(item, item.replace(reg, ".js"))
-    }
-    for(let item of delSources){
-      fs.unlinkSync(item)
-    }
-  }
-  if(!valueArray.useEslint){
-    let delSources = eslintConfigFiles.map(item => {
-      return path.join(targetPath, item)
-    })
-    for(let item of delSources){
-      fs.unlinkSync(item)
-    }
-  }
-}
-
 program
   .version("1.0.0")
   .command("init <name> [branch]")
@@ -135,14 +78,27 @@ program
       appkeyArr.push(appKey)
       valueArray.push(appObj)
     }
+    const targetPath = path.resolve(__dirname, "processChild.js");
+    const spinner = ora("项目生成中...")
+    spinner.start()
     for(let index in valueArray){
-      const spinner = ora(`${appkeyArr[index]}子应用模板下载中~请稍候`);
-      spinner.start();
-      await downloadTemplate("https://github.com/wz19951016/iceZoneChild.git#master", appkeyArr[index], childSources, spinner, valueArray[index])
-      renameOrDelete(appkeyArr[index], valueArray[index])
+      downloadFlag.push(1)
+      installFlag.push(1)
+      const currentProcess = fork(targetPath, [appkeyArr[index], JSON.stringify(valueArray[index]), "https://github.com/wz19951016/iceZoneChild.git#master", JSON.stringify(childSources)])
+      currentProcess.on("close", code => {
+        // console.log(`子进程${index}关闭：${code}`)
+        downloadFlag.shift()
+        ifOver(downloadFlag, spinner)
+      })
     }
-    const spinner = ora("基座应用模板下载中~请稍候");
-    spinner.start();
-    await downloadTemplate("https://github.com/wz19951016/icezoneBase.git#master" ,name, baseSources, spinner, valueArray)
+    const masterProcess = fork(targetPath, [name, JSON.stringify(valueArray), "https://github.com/wz19951016/icezoneBase.git#master", JSON.stringify(baseSources)])
+    masterProcess.on("close", code => {
+      // console.log(`主进程关闭`)
+      downloadFlag.shift()
+      ifOver(downloadFlag, spinner)
+    })
+    // const spinner = ora("基座应用模板下载中~请稍候");
+    // spinner.start();
+    // await downloadTemplate("https://github.com/wz19951016/icezoneBase.git#master", name, baseSources, spinner, valueArray)
   })
 program.parse(process.argv)
