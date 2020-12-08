@@ -138,11 +138,11 @@ program
     for(let index in valueArray){
       const spinner = ora(`${appkeyArr[index]}子应用模板下载中~请稍候`);
       spinner.start();
-      await downloadTemplate("https://github.com/wz19951016/iceZoneChild.git", appkeyArr[index], childSources, spinner, valueArray[index])
+      await downloadTemplate("https://github.com/wz19951016/iceZoneChild.git#master", appkeyArr[index], childSources, spinner, valueArray[index])
       renameOrDelete(appkeyArr[index], valueArray[index])
     }
     const spinner = ora("基座应用模板下载中~请稍候");
     spinner.start();
-    await downloadTemplate("https://github.com/wz19951016/icezoneBase.git" ,name, baseSources, spinner, valueArray)
+    await downloadTemplate("https://github.com/wz19951016/icezoneBase.git#master" ,name, baseSources, spinner, valueArray)
   })
 program.parse(process.argv)
