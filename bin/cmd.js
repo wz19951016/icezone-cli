@@ -27,9 +27,7 @@ const replaceTemplate = (fsPath, valueArray) => {
 }
 const downloadTemplate = (downloadUrl, name, sources, spinner, valueArray) => {
   return new Promise((resolve, reject) => {
-    const targetPath = path.resolve(__dirname, name);
-    console.log(targetPath)
-    console.log(process.cwd())
+    const targetPath = path.resolve(process.cwd(), name);
     download(`direct:${downloadUrl}`, targetPath, {clone: true}, err => {
       if(!err){
         spinner.succeed()
