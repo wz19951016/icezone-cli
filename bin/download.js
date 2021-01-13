@@ -2,7 +2,7 @@
  * @Author: wangzhong
  * @Date: 2020-12-08 16:39:55
  * @LastEditors: wangzhong
- * @LastEditTime: 2020-12-08 18:38:17
+ * @LastEditTime: 2021-01-13 17:47:05
  * @FilePath: /icezone-cli/bin/download.js
  */
 const path = require('path');
@@ -15,9 +15,10 @@ let tsOrJsExchange = ["src/App.tsx", "src/actions/index.ts", "src/reducers/index
 let tsConfigFiles = ["global.d.ts", "tsconfig.json"]
 let eslintConfigFiles = [".eslintrc.js"]
 let reg = /.ts/
-const replaceTemplate = (fsPath, valueArray) => {
+
+const replaceTemplate = (fsPath, valueArray, name) => {
   if(fs.existsSync(fsPath)){
-    let templateData = Array.isArray(valueArray) ? {apps: valueArray} : valueArray
+    let templateData = Array.isArray(valueArray) ? {apps: valueArray, name} : valueArray
     const content = fs.readFileSync(fsPath).toString()
     const template = Handlebars.compile(content)
     const result = template(templateData)
@@ -33,7 +34,7 @@ const downloadTemplate = (downloadUrl, name, sources, valueArray) => {
           return path.join(targetPath, item)
         })
         currentSources.forEach(item => {
-          replaceTemplate(item, valueArray)
+          replaceTemplate(item, valueArray, name)
         })
         resolve("success")
       }else{

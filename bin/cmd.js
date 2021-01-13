@@ -5,8 +5,9 @@ const path = require('path');
 const inquirer = require("inquirer")
 const ora = require('ora');
 const fork = require('child_process').fork
+const packageJson = require("../package.json")
 
-let baseSources = ["src/main.js", "src/Router.js", "webpack.config.js"]
+let baseSources = ["src/main.js", "src/Router.js", "webpack.config.js", "package.json"]
 let childSources = ["webpack.config.js", "package.json", "index.html", "src/App.tsx", "src/store.js", "src/actions/index.ts", "src/reducers/index.ts", "src/singleSpaEntry.js"]
 let downloadFlag = [1], installFlag = [1]
 
@@ -16,7 +17,7 @@ const ifOver = (flag, spinner) => {
   }
 }
 program
-  .version("1.0.0")
+  .version(packageJson.version)
   .command("init <name> [branch]")
   .description("初始化项目文件")
   .action(async (name, branch) => {
@@ -39,6 +40,7 @@ program
         default: 2
       }
     ])
+    //根据自定义子应用数量，自动生成对应子应用命令行交互式问题
     let askArray = new Array(appsNum.num - 0).fill(null)
     askArray = askArray.map((item, index) => {
       return {
@@ -75,6 +77,7 @@ program
       appObj.useTs = result3[appKey]
       appObj.useEslint = result4[appKey]
       appObj.index = Number(index) + 1
+      appObj.isLast = Number(index) + 1 === askArray.length
       appkeyArr.push(appKey)
       valueArray.push(appObj)
     }
@@ -86,19 +89,30 @@ program
       installFlag.push(1)
       const currentProcess = fork(targetPath, [appkeyArr[index], JSON.stringify(valueArray[index]), "https://github.com/wz19951016/iceZoneChild.git#master", JSON.stringify(childSources)])
       currentProcess.on("close", code => {
-        // console.log(`子进程${index}关闭：${code}`)
+        console.log(`子进程${index}关闭：${code}`)
         downloadFlag.shift()
         ifOver(downloadFlag, spinner)
       })
     }
     const masterProcess = fork(targetPath, [name, JSON.stringify(valueArray), "https://github.com/wz19951016/icezoneBase.git#master", JSON.stringify(baseSources)])
     masterProcess.on("close", code => {
-      // console.log(`主进程关闭`)
+      console.log(`主进程关闭`)
       downloadFlag.shift()
       ifOver(downloadFlag, spinner)
     })
     // const spinner = ora("基座应用模板下载中~请稍候");
     // spinner.start();
     // await downloadTemplate("https://github.com/wz19951016/icezoneBase.git#master", name, baseSources, spinner, valueArray)
+  })
+program
+  .version(packageJson.version)
+  .command("start")
+  .description("一键启动项目")
+  .action(async () => {
+    console.log(path.resolve(__dirname, "start.js"))
+    const startProgress = fork(path.resolve(__dirname, "start.js"))
+    startProgress.on("close", code => {
+      console.log(`start结束：${code}`)
+    })
   })
 program.parse(process.argv)
