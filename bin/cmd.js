@@ -2,10 +2,12 @@
 // console.log("hello world!")
 const { program } = require("commander")
 const path = require('path');
+const fs = require('fs');
 const inquirer = require("inquirer")
 const ora = require('ora');
 const fork = require('child_process').fork
 const packageJson = require("../package.json")
+const { recursionDirToMatchFile } = require("./util")
 
 let baseSources = ["src/main.js", "src/Router.js", "webpack.config.js", "package.json"]
 let childSources = ["webpack.config.js", "package.json", "index.html", "src/App.tsx", "src/store.js", "src/actions/index.ts", "src/reducers/index.ts", "src/singleSpaEntry.js"]
@@ -115,4 +117,35 @@ program
       console.log(`start结束：${code}`)
     })
   })
+program
+  .version(packageJson.version)
+  .command("add <name> [branch]")
+  .description("增加新的子应用")
+  .action(async (name, branch) => {
+    const currentpath = path.resolve(process.cwd(), name)
+    const hasFile = fs.existsSync(currentpath)
+    const list = fs.readdirSync(currentpath)
+    if(hasFile){
+      const filePath = recursionDirToMatchFile(currentpath, "webpack.config")
+      console.log(filePath)
+      console.log(path.resolve(filePath, "../"))
+      // const childPackageJson = path.resolve(process.cwd(), `${name}/package.json`)
+      let content = fs.readFileSync(filePath).toString()
+      console.log(content)
+      const targetDirPlugin = path.resolve(filePath, "../packagePlugin.js")
+      if(!fs.existsSync(targetDirPlugin)){
+        fs.copyFileSync(path.join(__dirname, "packagePlugin.js"), targetDirPlugin)
+      }
+    }
+  })
+program
+  .version(packageJson.version)
+  .command("remove <name> [branch]")
+  .description("移除指定子应用")
+  .action()
+program
+  .version(packageJson.version)
+  .command("package <name> [branch]")
+  .description("把react项目包装为singlespa子应用")
+  .action()
 program.parse(process.argv)

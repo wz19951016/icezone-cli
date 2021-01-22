@@ -2,14 +2,14 @@
  * @Author: wangzhong
  * @Date: 2021-01-13 17:50:54
  * @LastEditors: wangzhong
- * @LastEditTime: 2021-01-13 18:33:02
+ * @LastEditTime: 2021-01-20 10:09:27
  * @FilePath: /icezone-cli/bin/start.js
  */
 const concurrently = require('concurrently');
 const fs = require('fs');
 const path = require('path');
 
-const test = async () => {
+const start = async () => {
   const targetJson = path.resolve(process.cwd(), "package.json")
   const content = JSON.parse(fs.readFileSync(targetJson).toString())
   let commandArray = []
@@ -28,5 +28,5 @@ const test = async () => {
     console.log("fail")
   })
 }
-test()
+start()
 
