@@ -2,7 +2,7 @@
  * @Author: wangzhong
  * @Date: 2021-01-22 16:40:49
  * @LastEditors: wangzhong
- * @LastEditTime: 2021-01-22 18:03:08
+ * @LastEditTime: 2021-01-26 18:31:14
  * @FilePath: /icezone-cli/bin/util.js
  */
 
@@ -15,6 +15,7 @@ const fs = require("fs")
  * @param {*} fileName 需要匹配的文件名
  */
 const recursionDirToMatchFile = (dirPath, fileName) => {
+  console.log(dirPath)
   let excludeDir = /^node_modules$/
   let fileReg = new RegExp(fileName)
   let list = fs.readdirSync(dirPath)
@@ -39,5 +40,16 @@ const recursionDirToMatchFile = (dirPath, fileName) => {
     }
   }
 }
+/**
+ * 判断文件是否有打包必要依赖，并决定是否修改文件内容
+ * @param {*} path 文件路径
+ */
+const DetermineWhetherToModifyConfigAndToDo = (path) => {
+  let content = fs.readFileSync(path).toString()
+  let reg = /const [^ ]* = require\(.*\)/g
+  console.log(content)
+  console.log(content.match(reg))
+}
 
+exports.DetermineWhetherToModifyConfigAndToDo = DetermineWhetherToModifyConfigAndToDo
 exports.recursionDirToMatchFile = recursionDirToMatchFile

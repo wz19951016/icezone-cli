@@ -3,8 +3,8 @@
  * @Author: wangzhong
  * @Date: 2020-08-17 17:04:12
  * @LastEditors: wangzhong
- * @LastEditTime: 2021-01-21 18:16:00
- * @FilePath: /icezone-cli/app1/testPlugin.js
+ * @LastEditTime: 2021-01-26 18:07:06
+ * @FilePath: /icezone-cli/bin/packagePlugin.js
  */
 const fs = require('fs');
 const path = require('path');
@@ -36,14 +36,14 @@ class PackagePlugin {
         console.log(this.entry)
         console.log(Object.prototype.toString.call(this.entry))
         if(Object.prototype.toString.call(this.entry) ===  "[object Object]"){
-          let keys = Object.keys(this.entry)
-          for(let item of keys){
-            const content = getFileContent(this.entry[item])
-            console.log(content)
-            if(checkIsReactEntry(content)){
-              return null
-            }
-          }
+          // let keys = Object.keys(this.entry)
+          // for(let item of keys){
+          //   const content = getFileContent(this.entry[item])
+          //   console.log(content)
+          //   if(checkIsReactEntry(content)){
+          //     return null
+          //   }
+          // }
         }else if(Array.isArray(this.entry)){
 
         }else{

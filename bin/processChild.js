@@ -2,12 +2,13 @@
  * @Author: wangzhong
  * @Date: 2020-12-08 16:11:09
  * @LastEditors: wangzhong
- * @LastEditTime: 2021-01-13 18:20:14
+ * @LastEditTime: 2021-01-26 17:56:51
  * @FilePath: /icezone-cli/bin/processChild.js
  */
 const path = require('path');
 const spawn = require("child_process").spawn
 const {downloadTemplate, renameOrDelete} = require("./download.js")
+console.log(process.argv)
 const npmInstall = () => {
   return new Promise((resolve, reject) => {
     const targetPath = path.resolve(process.cwd(), process.argv[2]);

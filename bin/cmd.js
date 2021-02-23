@@ -7,11 +7,10 @@ const inquirer = require("inquirer")
 const ora = require('ora');
 const fork = require('child_process').fork
 const packageJson = require("../package.json")
-const { recursionDirToMatchFile } = require("./util")
+const { recursionDirToMatchFile, DetermineWhetherToModifyConfigAndToDo } = require("./util")
 
 let baseSources = ["src/main.js", "src/Router.js", "webpack.config.js", "package.json"]
 let childSources = ["webpack.config.js", "package.json", "index.html", "src/App.tsx", "src/store.js", "src/actions/index.ts", "src/reducers/index.ts", "src/singleSpaEntry.js"]
-let downloadFlag = [1], installFlag = [1]
 
 const ifOver = (flag, spinner) => {
   if(flag.length === 0){
@@ -23,6 +22,7 @@ program
   .command("init <name> [branch]")
   .description("初始化项目文件")
   .action(async (name, branch) => {
+    let downloadFlag = [1], installFlag = [1]
     const paramater = await inquirer.prompt([
       {
         name: "description",
@@ -120,22 +120,30 @@ program
 program
   .version(packageJson.version)
   .command("add <name> [branch]")
-  .description("增加新的子应用")
+  .description("增加新的子应用(暂时只支持添加符合ice标准的singlespa应用)")
   .action(async (name, branch) => {
     const currentpath = path.resolve(process.cwd(), name)
     const hasFile = fs.existsSync(currentpath)
     const list = fs.readdirSync(currentpath)
     if(hasFile){
-      const filePath = recursionDirToMatchFile(currentpath, "webpack.config")
-      console.log(filePath)
-      console.log(path.resolve(filePath, "../"))
-      // const childPackageJson = path.resolve(process.cwd(), `${name}/package.json`)
-      let content = fs.readFileSync(filePath).toString()
+      // const filePath = recursionDirToMatchFile(currentpath, "webpack.config")
+      // console.log(filePath)
+      // console.log(path.resolve(filePath, "../"))
+      // // const childPackageJson = path.resolve(process.cwd(), `${name}/package.json`)
+      // const targetDirPlugin = path.resolve(filePath, "../packagePlugin.js")
+      // DetermineWhetherToModifyConfigAndToDo(filePath)
+
+      // if(!fs.existsSync(targetDirPlugin)){
+      //   fs.copyFileSync(path.join(__dirname, "packagePlugin.js"), targetDirPlugin)
+      // }
+      let packageJsonUrl = path.resolve(currentpath, "package.json")
+      let content = fs.readFileSync(packageJsonUrl).toString()
       console.log(content)
-      const targetDirPlugin = path.resolve(filePath, "../packagePlugin.js")
-      if(!fs.existsSync(targetDirPlugin)){
-        fs.copyFileSync(path.join(__dirname, "packagePlugin.js"), targetDirPlugin)
-      }
+      let nameReg = /["']name["'] {0,}: {0,}["'][^"^']*["']/g
+      let startReg = /["']start["'] {0,}: {0,}["'][^"^']*["']/g
+      console.log(content.match(nameReg))
+      console.log(content.match(startReg))
+      console.log(recursionDirToMatchFile(currentpath, "route"))
     }
   })
 program
@@ -148,4 +156,36 @@ program
   .command("package <name> [branch]")
   .description("把react项目包装为singlespa子应用")
   .action()
+program
+  .version(packageJson.version)
+  .command("initBase <name> [branch]")
+  .description("创建一个新的空白基座应用")
+  .action(async (name, branch) => {
+    let downloadFlag = [1]
+    const targetPath = path.resolve(__dirname, "processChild.js");
+    const spinner = ora("项目生成中,请稍候...")
+    spinner.start()
+    const masterProcess = fork(targetPath, [name, JSON.stringify([]), "https://github.com/wz19951016/icezoneBase.git#master", JSON.stringify(baseSources)])
+    masterProcess.on("close", code => {
+      console.log(`主进程关闭`)
+      downloadFlag.shift()
+      ifOver(downloadFlag, spinner)
+    })
+  })
+program
+.version(packageJson.version)
+.command("initChild <name> [branch]")
+.description("传建一个新的空白子应用")
+.action(async (name, branch) => {
+  let downloadFlag = [1]
+    const targetPath = path.resolve(__dirname, "processChild.js");
+    const spinner = ora("项目生成中,请稍候...")
+    spinner.start()
+    const masterProcess = fork(targetPath, [name, JSON.stringify([]), "https://github.com/wz19951016/iceZoneChild.git#master", JSON.stringify(childSources)])
+    masterProcess.on("close", code => {
+      console.log(`主进程关闭`)
+      downloadFlag.shift()
+      ifOver(downloadFlag, spinner)
+    })
+})
 program.parse(process.argv)

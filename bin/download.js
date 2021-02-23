@@ -2,7 +2,7 @@
  * @Author: wangzhong
  * @Date: 2020-12-08 16:39:55
  * @LastEditors: wangzhong
- * @LastEditTime: 2021-01-13 17:47:05
+ * @LastEditTime: 2021-01-26 18:02:44
  * @FilePath: /icezone-cli/bin/download.js
  */
 const path = require('path');
@@ -19,6 +19,7 @@ let reg = /.ts/
 const replaceTemplate = (fsPath, valueArray, name) => {
   if(fs.existsSync(fsPath)){
     let templateData = Array.isArray(valueArray) ? {apps: valueArray, name} : valueArray
+    console.log(templateData)
     const content = fs.readFileSync(fsPath).toString()
     const template = Handlebars.compile(content)
     const result = template(templateData)
